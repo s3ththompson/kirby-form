@@ -1,7 +1,7 @@
 {
     "name": "mzur/kirby-form",
     "description": "A form helper for Kirby-based websites, using the Post/Redirect/Get pattern.",
-    "type": "library",
+    "type": "kirby-plugin",
     "license": "MIT",
     "keywords": [
         "kirby",
