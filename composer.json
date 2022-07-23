@@ -24,7 +24,7 @@
         }
     ],
     "require": {
-        "mzur/kirby-flash": "dev-now",
+        "mzur/kirby-flash": "dev-instance-array",
         "getkirby/composer-installer": "^1.2"
     },
     "autoload": {
