@@ -85,7 +85,7 @@ class Form implements FormInterface
         $request = App::instance()->request();
         // Instantiate the Flash instance
         $this->flash = $sessionKey
-            ? new Flash($sessionKey)
+            ? Flash::getInstance($sessionKey)
             : Flash::getInstance();
 
         // Register the fields
