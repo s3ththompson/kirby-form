@@ -84,7 +84,9 @@ class Form implements FormInterface
     {
         $request = App::instance()->request();
         // Instantiate the Flash instance
-        $this->flash = $sessionKey ? new Flash($sessionKey) : Flash::getInstance();
+        $this->flash = $sessionKey
+            ? new Flash($sessionKey)
+            : Flash::getInstance();
 
         // Register the fields
         foreach ($rules as $field => $options) {
@@ -95,7 +97,9 @@ class Form implements FormInterface
         foreach ($this->fields as $field => $attributes) {
             if (in_array('file', $this->rules[$field], true)) {
                 if (in_array('required', $this->rules[$field])) {
-                    $this->rules[$field][array_search('file', $this->rules[$field])] = 'requiredFile';
+                    $this->rules[$field][
+                        array_search('file', $this->rules[$field])
+                    ] = 'requiredFile';
                 }
                 $this->data[$field] = $request->files()->get($field);
             } else {
@@ -124,13 +128,17 @@ class Form implements FormInterface
     public function data($key = '', $value = '', $escape = true)
     {
         if ($key === '') {
-            return $escape ? array_map([$this, 'encodeField'], $this->data) : $this->data;
+            return $escape
+                ? array_map([$this, 'encodeField'], $this->data)
+                : $this->data;
         } elseif ($value === '') {
-            if (! isset($this->data[$key])) {
+            if (!isset($this->data[$key])) {
                 return '';
             }
 
-            return $escape ? $this->encodeField($this->data[$key]) : $this->data[$key];
+            return $escape
+                ? $this->encodeField($this->data[$key])
+                : $this->data[$key];
         }
 
         $this->data[$key] = $this->trimWhitespace($value);
@@ -152,20 +160,33 @@ class Form implements FormInterface
     /**
      * Validate the form
      *
+     * @param  mixed  $now optionally flash errors for current page load only
      * @throws TokenMismatchException If not in debug mode and the CSRF token is invalid
      * @return  boolean  whether the form validates
      */
-    public function validates()
+    public function validates($now = false)
     {
         $app = App::instance();
 
-        $token = $app->request()->csrf() ?? $app->request()->body()->get(self::CSRF_FIELD);
+        $token =
+            $app->request()->csrf() ??
+            $app
+                ->request()
+                ->body()
+                ->get(self::CSRF_FIELD);
         if (empty($token) || csrf($token) !== true) {
             if ($app->option('debug', false) === true) {
                 throw new TokenMismatchException('The CSRF token was invalid.');
             }
-            $this->addError(self::CSRF_FIELD, I18n::translate('form-csrf-expired', 'Your session timed out. Please submit the form again.'));
-            $this->saveData();
+            $this->addError(
+                self::CSRF_FIELD,
+                I18n::translate(
+                    'form-csrf-expired',
+                    'Your session timed out. Please submit the form again.',
+                ),
+                $now,
+            );
+            $this->saveData($now);
 
             return false;
         }
@@ -174,8 +195,8 @@ class Form implements FormInterface
         $invalid = $validator->validate();
 
         if ($invalid) {
-            $this->addErrors($invalid);
-            $this->saveData();
+            $this->addErrors($invalid, $now);
+            $this->saveData($now);
 
             return false;
         }
@@ -291,9 +312,9 @@ class Form implements FormInterface
      * @param  mixed  optional  $value
      * @return void
      */
-    protected function addError($key, $value = '')
+    protected function addError($key, $value = '', $now = false)
     {
-        $this->addErrors([$key => $value]);
+        $this->addErrors([$key => $value], $now);
     }
 
     /**
@@ -307,7 +328,7 @@ class Form implements FormInterface
      *                       array of the key.
      * @return void
      */
-    protected function addErrors($data)
+    protected function addErrors($data, $now = false)
     {
         foreach ($data as $key => $value) {
             if (!isset($this->errors[$key])) {
@@ -321,16 +342,17 @@ class Form implements FormInterface
             }
         }
 
-        $this->saveErrors();
+        $this->saveErrors($now);
     }
 
     /**
      * Save the form data to the session
      *
+     * @param  mixed  $now optionally flash errors for current page load only
      * @return void
      */
-     protected function saveData()
-     {
+    protected function saveData($now = false)
+    {
         $data = [];
 
         foreach ($this->fields as $field => $options) {
@@ -339,8 +361,8 @@ class Form implements FormInterface
             }
         }
 
-        $this->flash->set(self::FLASH_KEY_DATA, $data);
-     }
+        $this->flash->set(self::FLASH_KEY_DATA, $data, $now);
+    }
 
     /**
      * Register a field
@@ -358,15 +380,18 @@ class Form implements FormInterface
         ];
 
         $this->rules[$key] = isset($options['rules']) ? $options['rules'] : [];
-        $this->messages[$key] = isset($options['message']) ? $options['message'] : [];
+        $this->messages[$key] = isset($options['message'])
+            ? $options['message']
+            : [];
     }
 
     /**
      * Save the errors to the session
+     * @param  mixed  $now optionally flash errors for current page load only
      */
-    protected function saveErrors()
+    protected function saveErrors($now = false)
     {
-        $this->flash->set(self::FLASH_KEY_ERRORS, $this->errors);
+        $this->flash->set(self::FLASH_KEY_ERRORS, $this->errors, $now);
     }
 
     /**

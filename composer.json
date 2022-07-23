@@ -17,8 +17,14 @@
             "email": "martin@the-inspired-ones.de"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/s3ththompson/kirby-flash"
+        }
+    ],
     "require": {
-        "mzur/kirby-flash": "^2.0",
+        "mzur/kirby-flash": "dev-now",
         "getkirby/composer-installer": "^1.2"
     },
     "autoload": {
